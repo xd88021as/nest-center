@@ -6,12 +6,9 @@ import {
   Post,
 } from '@nestjs/common';
 import { UserService } from '@test/api/core/user';
-import {
-  AuthSignInByPhoneBodyDto,
-  AuthSignInResponseDto,
-  AuthSignUpByPhoneBodyDto,
-} from '@test/shared/data-access/auth';
 import { AuthService } from '../services/auth.service';
+import { AuthSignInByPhoneBodyDto, AuthSignUpByPhoneBodyDto } from 'shared/data-access/auth/auth-body.dto';
+import { AuthSignInResponseDto } from 'shared/data-access/auth/auth-response.dto';
 
 @Controller('auth')
 export class AuthController {
