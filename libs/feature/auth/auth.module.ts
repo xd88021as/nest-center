@@ -1,14 +1,13 @@
+import { JwtConfig } from 'libs/common/config/interfaces/config.interface';
+import { PrismaModule } from 'libs/common/prisma/prisma.module';
+import { UserModule } from 'libs/core/user/user.module';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { JwtConfig } from '@test/api/common/config';
-import { PrismaModule } from '@test/api/common/prisma';
-import { UserModule } from '@test/api/core/user';
 import { AuthController } from './controllers/auth.controller';
 import { AuthService } from './services/auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
-
 @Module({
   imports: [
     PassportModule,
