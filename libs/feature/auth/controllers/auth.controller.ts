@@ -1,14 +1,10 @@
+import { UserService } from 'libs/core/user/services/user.service';
 import {
-  Body,
-  Controller,
-  ForbiddenException,
-  NotFoundException,
-  Post,
-} from '@nestjs/common';
-import { UserService } from '@test/api/core/user';
-import { AuthService } from '../services/auth.service';
-import { AuthSignInByPhoneBodyDto, AuthSignUpByPhoneBodyDto } from 'shared/data-access/auth/auth-body.dto';
+    AuthSignInByPhoneBodyDto, AuthSignUpByPhoneBodyDto
+} from 'shared/data-access/auth/auth-body.dto';
 import { AuthSignInResponseDto } from 'shared/data-access/auth/auth-response.dto';
+import { Body, Controller, ForbiddenException, NotFoundException, Post } from '@nestjs/common';
+import { AuthService } from '../services/auth.service';
 
 @Controller('auth')
 export class AuthController {

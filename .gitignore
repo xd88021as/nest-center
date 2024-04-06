@@ -1,7 +1,8 @@
 # compiled output
 /dist
 /node_modules
-/build
+/libs/common/config/development.ts
+/pnpm-lock.yaml
 
 # Logs
 logs
