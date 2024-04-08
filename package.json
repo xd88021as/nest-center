@@ -6,6 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
+    "build": "nest build",
     "db-env": "ts-node ./init/database.ts --env",
     "db-sync": "pnpm prisma db push && pnpm prisma db seed",
     "docker-init": "docker-compose -p nest-center-test -f init/docker-compose.yaml up -d --no-recreate",

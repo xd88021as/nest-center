@@ -1,6 +1,8 @@
+import { ObjectService } from 'libs/util/object/services/object.service';
 import { Injectable } from '@nestjs/common';
-import { ObjectService } from '@test/api/util/object';
-import { CommodityData, CommodityFindManyParams, CommodityFindUniqueParams } from '../interfaces/commodity.interface';
+import {
+    CommodityData, CommodityFindManyParams, CommodityFindUniqueParams
+} from '../interfaces/commodity.interface';
 import { CommodityRepository } from '../repositories/commodity.repository';
 
 @Injectable()

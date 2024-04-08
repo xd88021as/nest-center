@@ -19,6 +19,7 @@ const generatePrismaEnv = () => {
   );
 };
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const argv = require('minimist')(process.argv.slice(2));
 (async () => {
   if (argv.env) {
