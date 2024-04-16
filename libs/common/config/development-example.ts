@@ -6,9 +6,9 @@ export default {
   database: {
     connector: 'postgresql',
     user: 'postgres',
-    password: 12345,
+    password: '12345',
     host: 'localhost',
-    port: 5234,
+    port: '5234',
     schema: 'public',
   },
   jwt: {

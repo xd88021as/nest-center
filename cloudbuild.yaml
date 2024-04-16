@@ -1,0 +1,93 @@
+---
+steps:
+  # Build docker image and push to artifact registry.
+  - name: 'gcr.io/cloud-builders/docker'
+    id: buildImage
+    entrypoint: bash
+    args:
+      - '-c'
+      - |
+        cp libs/api/common/config/src/lib/development-sample.ts libs/api/common/config/src/lib/development.ts && \
+        apt install -qqy jq && \
+        cat package.json | jq -c -r '.devDependencies|with_entries(select([.key] | inside(["${_IMAGE_BUILD_PACKAGES}"])))' > /tmp/buildDeps.json && \
+        cat apps/api/package.json | jq --slurpfile buildDeps /tmp/buildDeps.json -r '.dependencies += $buildDeps[0]' > package.json && \
+        docker build -t '${_ARTIFACT_REGISTRY_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE_ID}' . && \
+        docker push '${_ARTIFACT_REGISTRY_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE_ID}'
+
+  # List secrets and format to cloud run Argument.
+  # Set _CRUN_SECRETS_FORMAT substitution, format secret path list to /<mount>/<path>=<SECRET>:latest.
+  - name: node
+    id: listSecrets
+    entrypoint: bash
+    args:
+      - '-c'
+      - |
+        npx ts-node init/secret.ts && \
+        apt update -qqy && apt install -qqy jq && \
+        cat secrets.json | jq -r '.envSecrets+.fileSecrets|map(join("=${_CRUN_SECRETS_PREFIX}") + ":latest") | join(",")' > /workspace/secret-path.txt
+
+  # Deploy container image to Cloud Run
+  - name: 'gcr.io/cloud-builders/gcloud'
+    waitFor: ['listSecrets']
+    entrypoint: bash
+    args:
+      - '-c'
+      - |
+        gcloud run deploy '${_CRUN_SERVICE_NAME_API}' \
+        --verbosity=debug \
+        --${_CRUN_ALLOW_UNAUTHENTICATED} \
+        --image '${_ARTIFACT_REGISTRY_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE_ID}' \
+        --region '${_CRUN_REGION}' \
+        --port '${_CRUN_PORT}' \
+        --memory '${_CRUN_MEMORY}' \
+        --cpu '${_CRUN_CPU}' \
+        --concurrency '${_CRUN_CONCURRENCY}' \
+        --vpc-egress '${_CRUN_VPC_EGRESS}' \
+        --ingress '${_CRUN_INGRESS}' \
+        --vpc-connector '${_CRUN_VPC_CONNECTOR}' \
+        --set-env-vars='${_CRUN_SET_ENV_VARS}' \
+        --service-account '${_CRUN_SERVICE_ACCOUNT}' \
+        --set-secrets=$(cat /workspace/secret-path.txt)
+
+  # Deploy uecare-api cloudtasks
+  # - name: 'gcr.io/cloud-builders/gcloud'
+  #   waitFor: ['listSecrets']
+  #   entrypoint: bash
+  #   args:
+  #     - '-c'
+  #     - |
+  #       gcloud run deploy '${_CRUN_SERVICE_NAME_CLOUDTASKS}' \
+  #       --verbosity=debug \
+  #       --${_CRUN_ALLOW_UNAUTHENTICATED} \
+  #       --image '${_ARTIFACT_REGISTRY_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE_ID}' \
+  #       --region '${_CRUN_REGION}' \
+  #       --port '${_CRUN_PORT}' \
+  #       --memory '${_CRUN_MEMORY}' \
+  #       --cpu '${_CRUN_CPU}' \
+  #       --concurrency '${_CRUN_CONCURRENCY}' \
+  #       --vpc-connector '${_CRUN_VPC_CONNECTOR}' \
+  #       --ingress '${_CRUN_INGRESS}' \
+  #       --vpc-egress '${_CRUN_VPC_EGRESS}' \
+  #       --set-env-vars='${_CRUN_SET_ENV_VARS}' \
+  #       --service-account '${_CRUN_SERVICE_ACCOUNT}' \
+  #       --set-secrets=$(cat /workspace/secret-path.txt)
+
+substitutions:
+  _CRUN_SECRETS_PREFIX:
+  _ARTIFACT_REGISTRY_LOCATION:
+  _REPOSITORY:
+  _IMAGE_ID: cloudrun
+  _IMAGE_BUILD_PACKAGES:
+  _CRUN_SERVICE_NAME_API:
+  _CRUN_SERVICE_NAME_CLOUDTASKS:
+  _CRUN_VPC_EGRESS:
+  _CRUN_REGION:
+  _CRUN_PORT: "3333"
+  _CRUN_MEMORY: 1Gi
+  _CRUN_CPU: "1"
+  _CRUN_CONCURRENCY: "80"
+  _CRUN_INGRESS: internal-and-cloud-load-balancing
+  _CRUN_ALLOW_UNAUTHENTICATED:
+  _CRUN_VPC_CONNECTOR:
+  _CRUN_SERVICE_ACCOUNT:
+  _CRUN_SET_ENV_VARS:
